@@ -9,10 +9,12 @@ from Utilities.cv_crop_processing import crop_screen
 from Utilities.cv_edge_processing import edge_processing
 import time
 import os
+import win32api
+import win32con
 
 
 past_frames = 20
-file_name = 'Files/train_data.npy'
+file_name = 'Files/dataset-2.npy'
 
 time_checkpoint_a, time_checkpoint_b = 0, 0
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -21,12 +23,26 @@ font_color = (255, 255, 255)
 thickness = 1
 frames_counter = 0
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 print('Are we using GPU?:', tf.test.is_gpu_available())
 
 train_data = list(np.load(file_name, allow_pickle=True))
 loaded_model = tf.keras.models.load_model('Files/cv_convlstm_model{20steps}.h5')
 q = queue.Queue(maxsize=past_frames)
+
+def press_key(hexKeyCode):
+    win32api.keybd_event(hexKeyCode, 0, 0, 0)
+
+def release_key(hexKeyCode):
+    win32api.keybd_event(hexKeyCode, 0, win32con.KEYEVENTF_KEYUP, 0)
+
+# Define key codes for 'wasd'
+key_map = {
+    'w': 87,  # W key
+    'a': 65,  # A key
+    's': 83,  # S key
+    'd': 68   # D key
+}
 
 while True:
     frames_counter += 1
@@ -35,9 +51,9 @@ while True:
     time_checkpoint_a = time.time()
     # acquire screen signal.
     # then, cropping, gray scaling, post-processing
-    screen = grab_screen(display_index=1, region=(0, 0, 1280, 720))
-    cropped_screen = crop_screen(screen, trim_rate=0.2)
-    resized_screen = edge_processing(cropped_screen, resize_width=200, resize_height=100)
+    screen = grab_screen()
+    cropped_screen = crop_screen(screen)
+    resized_screen = edge_processing(cropped_screen)
 
     cv2.imshow('test', resized_screen)
 
@@ -76,6 +92,11 @@ while True:
           'confidence:', confidence,
           'fps:', fps,
           end='')
+
+    # Apply the predicted action to the computer
+    # if predicted_action in key_map.keys():
+    #     press_key(key_map[predicted_action])
+    #     release_key(key_map[predicted_action])
 
     # some cv2 ritual
     if cv2.waitKey(25) & 0xFF == ord('q'):

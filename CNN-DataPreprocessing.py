@@ -38,4 +38,4 @@ random.shuffle(balanced_data)
 print('encoded_balanced_data')
 print(Counter(map(tuple, pd.DataFrame(balanced_data)[1])))
 
-np.save('Files/preprocessed_data.npy', np.array(balanced_data, dtype=object))
+np.save('Files/preprocessed_data_cnn.npy', np.array(balanced_data, dtype=object))

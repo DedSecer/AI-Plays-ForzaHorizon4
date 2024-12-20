@@ -15,8 +15,9 @@ while True:
 
     # grab screen information, apply some mask according to our mowdel
     # (in this case, edge detection)
-    screen = grab_screen(display_index=1, region=(200, 250, 700, 530))
-    output = ep.edge_processing(screen)
+    screen = grab_screen()
+    cropped_screen = ep.crop_screen(screen)
+    output = ep.edge_processing(cropped_screen)
     test_inputs = np.expand_dims([output], axis=-1)
 
     # generate prediction by model

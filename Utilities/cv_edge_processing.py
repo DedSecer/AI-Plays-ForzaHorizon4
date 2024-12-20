@@ -2,9 +2,27 @@ import cv2
 import numpy as np
 
 
-def edge_processing(screen_in, resize_width=200, resize_height=100):
+def extract_blue(screen_in):
+    # 将图像从 BGR 颜色空间转换为 HSV 颜色空间
+    hsv = cv2.cvtColor(screen_in, cv2.COLOR_BGR2HSV)
+
+    # 定义蓝色的 HSV 范围
+    lower_blue = np.array([100, 10, 0])
+    upper_blue = np.array([240, 200, 180])
+    
+
+    # 创建蓝色的掩码
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+
+    # 使用掩码提取蓝色部分
+    blue_extracted = cv2.bitwise_and(screen_in, screen_in, mask=mask)
+
+    return blue_extracted  
+
+def edge_processing(screen_in, resize_width=160, resize_height=90):
     # resize the screen at first to reduce the performance pressure
     screen_resized = cv2.resize(screen_in, (resize_width, resize_height))
+    # screen_resized = extract_blue(screen_resized)
 
     # apply erode and dilate to remove noise
     kernel = np.ones((2, 2), np.uint8)
@@ -13,6 +31,7 @@ def edge_processing(screen_in, resize_width=200, resize_height=100):
 
     # edge detection
     edges = cv2.Canny(screen_resized, 200, 255)
+    # edges = cv2.cvtColor(screen_resized, cv2.COLOR_BGR2GRAY)
 
     # define the ROI axis
     left_mid = (0, resize_height // 2)

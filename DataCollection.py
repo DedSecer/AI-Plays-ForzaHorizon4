@@ -44,18 +44,19 @@ while True:
 
     # Step 2: Acquire the current frame and crop the edge.
     # Notice: Set this index to the physical display that your game window is on.
-    screen = grab_screen(display_index=1, region=(0, 0, 1280, 720))
-    screen_output = crop_screen(screen, trim_rate=0.3)
+    screen = grab_screen()
+    screen_output = crop_screen(screen)
+    screen_output_rgb = edge_processing(screen_output)
 
     # Step 3: Acquire the current key-press and interpret it into the [W, A, S, D] format
     keys = key_check()
     key_output = key_to_wasd_format(keys)
 
     # Step 4: Append this new record to the dataset
-    training_data.append([screen_output, key_output])
+    training_data.append([screen_output_rgb, key_output])
 
-    # Save the dataset every 2000 samples
-    if len(training_data) % 2000 == 0:
+    # Save the dataset every 500 samples
+    if len(training_data) % 500 == 0:
         print(len(training_data))
         np.save(file_name, np.array(training_data, dtype=object))
 
@@ -73,7 +74,6 @@ while True:
     fps = 1 / actual_elapsed_time
 
     # put information on the screen (FPS, Total frames)
-    screen_output_rgb = edge_processing(screen_output, resize_width=300, resize_height=150)
     cv2.putText(screen_output_rgb, 'FPS: {:.2f}'.format(fps),
                 (10, 10), font, font_scale, font_color, thickness, cv2.LINE_AA)
     cv2.putText(screen_output_rgb, 'Total Frames: {}'.format(len(training_data)),

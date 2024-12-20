@@ -11,7 +11,7 @@ channels = 1
 past_frames = 20
 
 # Step1 : load datasets
-data = np.load('Files/train_data.npy', allow_pickle=True)
+data = np.load('Files/dataset-2.npy', allow_pickle=True)
 inputs = np.asarray([item[0] for item in data])
 outputs = np.array([item[1] for item in data])
 
@@ -51,6 +51,6 @@ random.shuffle(balanced_data)
 # Step5 : save to file
 
 print('OK')
-np.save('Files/preprocessed_data.npy', np.array(balanced_data, dtype=object))
+np.save('Files/preprocessed_data_lstm.npy', np.array(balanced_data, dtype=object))
 
 

@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 model_path = 'Files/cv_cnn_model.h5'
 
 # Step1 : load data
-data = np.load('Files/preprocessed_data.npy', allow_pickle=True)
+data = np.load('Files/preprocessed_data_cnn.npy', allow_pickle=True)
 inputs = np.array([item[0] for item in data])
 outputs = np.array([item[1] for item in data])
 

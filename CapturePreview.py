@@ -6,15 +6,14 @@ import numpy as np
 
 while True:
     # grab the screen image
-    screen = grab_screen(display_index=1, region=(0, 0, 1280, 720))
-    screen_rgb = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
+    screen = grab_screen()
 
     # cropping the image
-    cropped_screen = crop_screen(screen, trim_rate=0.3)
+    cropped_screen = crop_screen(screen)
 
-    resized_image = edge_processing(cropped_screen, resize_width=200, resize_height=100)
+    resized_image = edge_processing(screen)
 
-    cv2.imshow('original', screen_rgb)
+    cv2.imshow('original', screen)
     cv2.imshow('processed', resized_image)
 
     if cv2.waitKey(25) & 0xFF == ord('q'):

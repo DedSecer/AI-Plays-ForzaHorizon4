@@ -7,11 +7,11 @@ import Utilities.translate_result as tr
 import time
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 print('Are we using GPU?:', tf.test.is_gpu_available())
 past_frames = 20
 q = queue.Queue(maxsize=past_frames)
-file_name = 'Files/train_data.npy'
+file_name = 'Files/dataset-2.npy'
 train_data = list(np.load(file_name, allow_pickle=True))
 loaded_model = tf.keras.models.load_model('Files/cv_convlstm_model{20steps}.h5')
 

@@ -1,13 +1,13 @@
 def translate_wasd(lst):
     output = ''
     if lst[0] == 1:
-        output += 'W'
+        output += 'w'
     if lst[1] == 1:
-        output += 'A'
+        output += 'a'
     if lst[2] == 1:
-        output += 'S'
+        output += 's'
     if lst[3] == 1:
-        output += 'D'
+        output += 'd'
     if len(output) == 0:
         output = 'nothing'
     return output
