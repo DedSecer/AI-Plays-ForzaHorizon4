@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 
 
-def grab_screen(display_index=1, region=(0, 0, 1280, 720)):
+def grab_screen(display_index=1, region=(0, 0, 1920, 1080)):
     # 获取系统上的显示器列表
     monitors = win32api.EnumDisplayMonitors()
 
@@ -45,5 +45,6 @@ def grab_screen(display_index=1, region=(0, 0, 1280, 720)):
     win32gui.ReleaseDC(hwin, hwindc)
     win32gui.DeleteObject(bmp.GetHandle())
 
-    # 将图像从 BGRA 格式转换为 RGB 格式
-    return img
+    # 将图像从 BGRA 格式转换为 BGR 格式
+    return cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+    # return img

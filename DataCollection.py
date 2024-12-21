@@ -4,8 +4,7 @@ import time
 import numpy as np
 from Utilities.grabscreen import grab_screen
 from Utilities.getkeys import key_check, key_to_wasd_format
-from Utilities.cv_crop_processing import crop_screen
-from Utilities.cv_edge_processing import edge_processing
+from Utilities.cv_img_processing import bird_view_processing
 import time
 
 # cv2 text configurations
@@ -45,8 +44,9 @@ while True:
     # Step 2: Acquire the current frame and crop the edge.
     # Notice: Set this index to the physical display that your game window is on.
     screen = grab_screen()
-    screen_output = crop_screen(screen)
-    screen_output_rgb = edge_processing(screen_output)
+    # screen_output = crop_screen(screen)
+    # screen_output_rgb = edge_processing(screen_output)
+    screen_output_rgb = bird_view_processing(screen)
 
     # Step 3: Acquire the current key-press and interpret it into the [W, A, S, D] format
     keys = key_check()
@@ -87,5 +87,7 @@ while True:
 
     # Check for 'q' key press to exit
     if cv2.waitKey(1) & 0xFF == ord('q'):
+        print(len(training_data))
+        np.save(file_name, np.array(training_data, dtype=object))
         cv2.destroyAllWindows()
         break

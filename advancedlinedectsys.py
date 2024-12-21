@@ -1,4 +1,4 @@
-from moviepy.editor import VideoFileClip
+# from moviepy.editor import VideoFileClip
 import numpy as np
 import cv2
 import pickle
@@ -15,7 +15,7 @@ import matplotlib.gridspec as gridspec
 def abs_sobel_thresh(img, orient='x', thresh_min=25, thresh_max=255):
     # Convert to grayscale
     # gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS).astype(np.float)
+    hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS).astype(np.float64)
     l_channel = hls[:,:,1]
     s_channel = hls[:,:,2]
     # Apply x or y gradient with the OpenCV Sobel() function
@@ -102,19 +102,22 @@ def window_mask(width, height, img_ref, center, level):
 
 
 
-
 # Set up the process videos function
 def process_image(img):
     #undistort the image
     
     img_size = (img.shape[1],img.shape[0])
+    # img = extract_blue(img)
 
     bot_width = .70
-    mid_width = .15
-    height_pct = .49
+    mid_width = .05
+    height_pct = .45
     bottom_trim= .70   #hood
 
-    src = np.float32([[img.shape[1]*(0.5-mid_width/2), img.shape[0]*height_pct],[img.shape[1]*(0.5+mid_width/2),img.shape[0]*height_pct],[img.shape[1]*(0.5+bot_width/2), img.shape[0]*bottom_trim],[img.shape[1]*(0.5-bot_width/2), img.shape[0]*bottom_trim]])
+    src = np.float32([[img.shape[1]*(0.5-mid_width/2), img.shape[0]*height_pct],
+                      [img.shape[1]*(0.5+mid_width/2),img.shape[0]*height_pct],
+                      [img.shape[1]*(0.5+bot_width/2), img.shape[0]*bottom_trim],
+                      [img.shape[1]*(0.5-bot_width/2), img.shape[0]*bottom_trim]])
     offset = img_size[0]*0.25
     dst = np.float32([[offset,0],[img_size[0]-offset,0],[img_size[0]-offset,img_size[1]],[offset,img_size[1]]])   
     
@@ -255,15 +258,17 @@ def process_image(img):
     FinalScreen[720:1080,640:1280] = cv2.resize(road1, (640,360), interpolation=cv2.INTER_AREA)
     return FinalScreen
 
-#Output_video = 'output1_tracked.mp4'
-Input_video = 'h4.mp4'
-Output_video = 'h4ouy.mp4'
-#Input_video = 'harder_challenge_video.mp4'
-#Output_video = 'output_challenge_video.mp4'
-#Input_video = 'challenge_video.mp4'
+if __name__ == '__main__':
+    #Input_video = 'project_video.mp4'
+    #Output_video = 'output1_tracked.mp4'
+    Input_video = 'h4.mp4'
+    Output_video = 'h4ouy.mp4'
+    #Input_video = 'harder_challenge_video.mp4'
+    #Output_video = 'output_challenge_video.mp4'
+    #Input_video = 'challenge_video.mp4'
 
-clip1 = VideoFileClip(Input_video)
-video_clip = clip1.fl_image(process_image) # This function expects color images
-video_clip.write_videofile(Output_video, audio=False)
+    clip1 = VideoFileClip(Input_video)
+    video_clip = clip1.fl_image(process_image) # This function expects color images
+    video_clip.write_videofile(Output_video, audio=False)
 
 
