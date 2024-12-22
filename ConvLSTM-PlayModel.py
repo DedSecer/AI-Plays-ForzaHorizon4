@@ -9,9 +9,18 @@ from Utilities.cv_img_processing import edge_processing, bird_view_processing, c
 import time
 import pyautogui
 import threading
+import signal
+import sys
+
+hold_key_continue = True
+def signal_handler(signal, frame):
+    print('Caught Ctrl+C / SIGINT signal')
+    global hold_key_continue
+    hold_key_continue = False
+    sys.exit(0)
 
 def hold_key(key, hold_time):
-    while True:
+    while hold_key_continue:
         pyautogui.keyDown(key)
         time.sleep(hold_time)
         pyautogui.keyUp(key)
@@ -61,10 +70,11 @@ while q.qsize() < past_frames:
 sequential_input = np.asarray(list(q.queue))
 # data feed to the model has to be inside a list, so I did this.
 sequential_input = np.expand_dims(sequential_input, axis=0)
-prediction = loaded_model.predict(sequential_input)
+prediction = loaded_model.predict(tf.data.Dataset.from_tensors(sequential_input))
 
-start_up(1)
-threading.Thread(target=hold_key, args=('w', 0.3)).start()
+# start_up(1)
+threading.Thread(target=hold_key, args=('w', 0.1)).start()
+signal.signal(signal.SIGINT, signal_handler)
 while True:
     frames_counter += 1
 
@@ -88,7 +98,7 @@ while True:
     sequential_input = np.asarray(list(q.queue))
     # data feed to the model has to be inside a list, so I did this.
     sequential_input = np.expand_dims(sequential_input, axis=0)
-    prediction = loaded_model.predict(sequential_input)
+    prediction = loaded_model.predict(tf.data.Dataset.from_tensors(sequential_input))
 
 
     # acquire the argmax
