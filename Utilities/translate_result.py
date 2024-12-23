@@ -9,5 +9,5 @@ def translate_wasd(lst):
     if lst[3] == 1:
         output += 'd'
     if len(output) == 0:
-        output = 'nothing'
+        output = ''
     return output

@@ -40,7 +40,7 @@ def bird_eye_view(img):
 
 def bird_view_processing(screen_in, resize_width=160, resize_height=90):
     processed_image = bird_eye_view(screen_in)
-    # cv2.imshow('bird_view', cv2.resize(processed_image, (resize_width, resize_height)))
+    cv2.imshow('bird_view', cv2.resize(processed_image, (480, 270)))
     processed_image = extract_blue(processed_image)
     processed_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
     processed_image = cv2.resize(processed_image, (resize_width, resize_height))

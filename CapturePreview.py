@@ -2,7 +2,7 @@ import cv2
 from Utilities.grabscreen import grab_screen
 from Utilities.cv_img_processing import edge_processing, bird_view_processing, crop_screen
 import numpy as np
-from advancedlinedectsys import process_image, bird_eye_view
+from advancedlinedectsys import process_image
 
 
 # while True:
