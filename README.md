@@ -1,151 +1,74 @@
-# AI Plays Horizon 4
+The aim of this project is the create a ML module that can control the car in forza4 to drive correctly according to the navigation lines.
 
-## introduction
+## How
 
-### overall
+1.**Collect dataset from player**: including screen recording and key input action.
 
-Forza Horizon 4 is a very popular and well known single
-and multiplayer cross-platform racing game.
-The main gameplay of the game is to drive a vehicle 
-and then follow a fixed route (players must pass all the check points along the way), then try your best to be the first to cross 
-the finish line.
+2.**Preprocess**: cropping, color extracting, gray-scaling, warping, resizing  by opencv.
 
-The ultimate goal of this project is to create an ML model that can play this game
-fully automated at an acceptable skill, allowing us to win or 
-complete a race even if we are away from the keyboard. 
+3.**Training**: use the image as input and keyboard action as output.
 
-It is important to note that this project focuses on allowing
-the model to clone human behavior and does not access to any of 
-the game's built-in APIs (actually there's no such kind of APIs at all), and that the information 
-(mostly visual) that the real player gets while playing 
-will be used as the __only__ input to the model.
-The model's outputs are also identical to the player's, 
-i.e. keyboard action.
+4.**Predicting**: recording the actual game screen as input and use the module to predict the keyboard action.
 
+## Reference
 
-here's how I develop everything
+- ##### [EthanNCai/AI-Plays-ForzaHorizon4](https://github.com/EthanNCai/AI-Plays-ForzaHorizon4)
 
-1. Generating datasets by recording human's gameplay (a sample is consists of screen and the keyboard actions)
-2. Data preprocessing (cropping, resizing, gray-scaling, canny edge detection etc.)
-3. Training with different models
-4. evaluate performance in actual game environments(Forza Horizon 4)
+  *The clarity of the lane lines has a great impact on the image. Some lane line is not clear. In addition, since the canny edge detection of OpenCV is used, there will be a lot of irrelevant data in the image, and the trained model is difficult to converge.(probably result from my tiny dataset)*
 
-I used two kinds of models to try to accomplish this goal.
-* a regular convolutional neural network
-* a convLSTM
+- ##### [uppala75/CarND-Advanced-Lane-Lines](https://github.com/uppala75/CarND-Advanced-Lane-Lines?tab=readme-ov-file)
 
-it is worth mentioning that no matter which method is used,
-the inputs and the outputs are the identical from an external 
-perspective, i.e. __a frame is used as the input and the 
-model predicts the corresponding keyboard action.__
+  *using the warping approach from the repo. In the front view, the further away the lane line is, the smaller the pixels we get，it's hard to detect and lock on to future lane lines if their pixels and their footprint essentially get smaller and smaller。using bird-eyes view allow us for future planning.*
 
-Theoretically, the performance of the convLSTM 
-network should be better than that of a regular CNN network. 
-This is because convLSTM enables the model to take more 
-than just the current frame into account when making decisions.
-The information contained in past frames is also selectively
-retained to influence the current decision. Unlike CNNs,
-the decision output from CNNs depends entirely on the
-information in the current frame. Consider either real
-life car driving or car driving in a game. When making
-some difficult maneuvers, such as turning. How humans 
-operate the steering wheel is also a process that requires 
-reference to past short-term memory. 
+- ##### [jimhoggey/SelfdrivingcarForza](https://github.com/jimhoggey/SelfdrivingcarForza)
 
-One more thing I must
-point out is that no matter which model structure is used. 
-The driving level of the real human player
-who recorded the training set will be the __upper limit__
-of the model's driving ability. This is because the model
-is always just approaching and mimicking the behavior of 
-the training set. If you want the model to achieve a 
-breakthrough in driving skill, perhaps reinforcement
-training is a better option.
-
-### CNN
-![pic0](pictures_for_readme/cnn.jpg)
-### convLSTM
-
-The convLSTM has a very important parameter 
-with respect to the CNN. 
-It is the _time step_
-of the LSTM network. In the case of images,
-its value is $n$. Unlike CNNs which feed 
-a single image into the model at a time, convLSTM feeds a sequence of images into the model. 
-In this project it is a sequence of images from the past $n$ frames. We need to feed the LSTM with $n$
-frames from $f_n$ until $f_0$ so that the convLSTM can make decisions based 
-on the information it gets from $f_n$ to $f_0$.
-
-In Python.
-I used queue structure to store the past $n$ frames, 
-which is surrounded by blue dotted lines on the picture. 
-As the game progresses, we get a new frame $f_0$ and add it to the queue,
-since the length of the queue is fixed, we remove the oldest $f_{n+1}$ frame 
-from the queue so that the queue always holds the current
-frame and the $n$ frames before the current frame for input to the convLSTM.
-
-![pic1](pictures_for_readme/lstm.jpg)
 
 ## Getting Started
 
-### Step1 : create a dataset
+#### Step1: Collecting the dataset
 
-You need to collect real human in-game actions and the corresponding game 
-screens as a training set. Here you can choose to record your own training 
-set using the python script I provided or download the training set I previously collected.
+run `DataColleciton.py` to collect the image from the screen and the keyboard action. we do some preprocessing in this step by opencv, so that the dataset won't take too much space.
 
-> sorry, the download service of my website is currently unavailable.
-> please send a message to chickenbilibili@outlook.com to acquire this dataset.
- 
-[Download  dataset-0.npy](not_available)
+![image-20241224122237564](assets/image-20241224122237564.png)
 
-If you want to create your own dataset, here's how:
+#### Step2: Preprocessing
 
-*  1._Confirm the frame capturing area_: use __DataCollection/CapturePreview.py__ 
-to preview the frame capture
-zone, 
-*  2._Start recording your gameplay_: After you confirm the frame capturing area, in directory
-__DataCollection__,
-make sure the parameter of _grab_screen()_
-in __DataCollection.py__ is identical to the one of _grab_screen()_'s in __ModelPreview.py__
-*  Find more details in code comments
+Run `ConvLSTM-DataPreprocess.py` for data preprocessing.
 
-### Step3 : preview the dataset
+1. Convert to sequential data:
 
-You can preview the dataset with the script I provided,
-__DataCollection/DataPreview.py__ This will sequentially play the frame and the corresponding 
-label which is a four element long vector : _[W,A,S,D]_ 
+   Convert the input data and output labels into sequential data to fit the LSTM model’s input requirements. For each input sequence, extract the past *pass_frame* frames as input and the corresponding output labels as targets.
 
-*   it just like playing a video
+2. Balance the data:
 
+   - Count the occurrences of each label.
+   - Calculate the average number of occurrences for each label to set the balancing target.
+   - For labels with fewer occurrences than the target, keep all data; for labels with more occurrences than the target, randomly sample the data to achieve balance.
+   - Shuffle the balanced data.
 
-### Step4 : preprocess, train, preview and finally play model
+3. One-hot encoding for labels:
 
+   Use the *onehot_encode* function to apply one-hot encoding to the keyboard events.
 
-Inside __CNN__ and __convLSTM__ directories, you can preprocess, train,
-preview and play the corresponding 
-model.
+#### Step3:  Model Training
 
+Run `ConvLSTM-TrainModel.py` to load the preprocessed data and train the model.
 
-After the dataset inplace, you still need to do one more thing before training,
-that is, data preprocess. Here's how.
+The network layers used in this project include:
 
-*   For CNN
+1. **ConvLSTM2D layer**: Used to process spatiotemporal data, capturing correlations across both time and space.
+2. **BatchNormalization layer**: Standardizes the input for each layer to accelerate training and improve model stability.
+3. **TimeDistributed layer**: Applies the MaxPooling2D layer to each time step of the input sequence.
+4. **MaxPooling2D layer**: Downsamples the spatial dimensions of the input to reduce computation and memory usage.
+5. **Flatten layer**: Flattens the multidimensional input into a one-dimensional array for the fully connected layers.
+6. **Dense layer**: Applies a linear transformation and activation function to the input.
+7. **Dropout layer**: Randomly drops a portion of the input units during training to prevent overfitting.
 
-    *    convert the `[W,A,S,D]` raw label format into the one-hot encoded format
-    *    balance the data to prevent the model fall into the shortcut solution 
-*  For LSTM
-    *    convert the `[W,A,S,D]` raw label format into the one-hot encoded format
-    *    restructure the dataset. that is, form the raw-data structure like `[(img_1,key_1),(img_2,key_2)...]` to something like `[([img_1,img_2...img_n],key_n),([img_2,img_3...img_n+1],key_n+1)...]` the `n` here is acutally the `timestep`  in LSTM
-    *    balance the data to prevent the model fall into the shortcut solution 
+<img src="assets/convlstm_model_structure_plot.png" alt="convlstm_model_structure_plot" style="zoom:50%;" />
 
- __DataPreprocess.py__  performed label balancing,
-one-hot encoding and more to the dataset.
-For convLSTM in particular, its __DataPreprocess.py__ also includes converting
-the dataset into sequential samples according to a specified _time step_.
+#### Step4: Model Prediction
 
-after data preprocessing, use __trainModel.py__ to load and train the preprocessed data.
+With the game running，run `ConvLSTM-PlayModel.py`，which reads image from the screen, preprocesses it, and uses the trained model to predict the keyboard actions. The model’s predictions are then applied through *pyautogui* to control the car, keeping it on track with the navigation lines.
 
-> warning: In order to successfully train the model, the `timestep` value in both `DataPreprocess.py` and `tranModel.py` must be consisted. 
 
 
